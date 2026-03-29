@@ -1,0 +1,407 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-sans); }
+  body { background: transparent; }
+  :root {
+    --teal-dark: #0F6E56; --teal-mid: #1D9E75; --teal-light: #9FE1CB; --teal-xlight: #E1F5EE;
+    --blue-dark: #185FA5; --blue-mid: #378ADD; --blue-light: #B5D4F4; --blue-xlight: #E6F1FB;
+    --text: var(--color-text-primary); --text2: var(--color-text-secondary);
+    --bg: var(--color-background-primary); --bg2: var(--color-background-secondary);
+    --border: var(--color-border-tertiary);
+  }
+  .sim-wrap { padding: 1rem 0; }
+  .hero { background: linear-gradient(135deg, #0F6E56 0%, #185FA5 100%); border-radius: var(--border-radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; color: #fff; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .hero h1 { font-size: 18px; font-weight: 500; }
+  .hero p { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .badge { background: rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 500; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 1.25rem; }
+  .ctrl-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--border-radius-lg); padding: 1rem; }
+  .ctrl-card label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 6px; }
+  .ctrl-card .ctrl-val { font-size: 20px; font-weight: 500; color: var(--teal-dark); margin-bottom: 8px; }
+  .ctrl-card input[type=range] { width: 100%; }
+  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
+  .metric { background: var(--bg2); border-radius: var(--border-radius-md); padding: 14px 1rem; text-align: center; position: relative; overflow: hidden; }
+  .metric::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .metric.teal::before { background: #1D9E75; }
+  .metric.blue::before { background: #378ADD; }
+  .metric.amber::before { background: #EF9F27; }
+  .metric.green::before { background: #639922; }
+  .metric .m-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .metric .m-val { font-size: 22px; font-weight: 500; color: var(--text); }
+  .metric .m-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .metric .m-delta { font-size: 12px; font-weight: 500; margin-top: 4px; }
+  .delta-pos { color: #0F6E56; } .delta-neg { color: #A32D2D; }
+  .section { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 1.25rem; }
+  .section-title { font-size: 13px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .tab-btn { padding: 6px 14px; border-radius: 20px; border: 0.5px solid var(--border); background: transparent; font-size: 13px; cursor: pointer; color: var(--text2); transition: all 0.15s; }
+  .tab-btn.active { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+  .chart-wrap { position: relative; width: 100%; }
+  .lob-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .lob-card { background: var(--bg2); border-radius: var(--border-radius-md); padding: 1rem; }
+  .lob-title { font-size: 13px; font-weight: 500; margin-bottom: 12px; color: var(--teal-dark); }
+  .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .bar-label { font-size: 12px; color: var(--text2); min-width: 60px; }
+  .bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+  .bar-pct { font-size: 12px; font-weight: 500; min-width: 36px; text-align: right; }
+  .bar-fill.before { background: #378ADD; }
+  .bar-fill.after { background: #1D9E75; }
+  .timeline { display: flex; gap: 0; overflow-x: auto; padding-bottom: 4px; }
+  .phase { flex: 1; min-width: 130px; padding: 12px; border-left: 2px solid var(--teal-light); position: relative; }
+  .phase:first-child { border-left: none; }
+  .phase-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--teal-mid); position: absolute; left: -6px; top: 14px; }
+  .phase:first-child .phase-dot { left: 0; position: static; margin-bottom: 6px; }
+  .phase-year { font-size: 11px; font-weight: 500; color: var(--teal-dark); }
+  .phase-name { font-size: 12px; font-weight: 500; margin: 2px 0; }
+  .phase-stat { font-size: 11px; color: var(--text2); }
+  .risk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+  .risk-item { background: var(--bg2); border-radius: var(--border-radius-md); padding: 12px; }
+  .risk-name { font-size: 12px; font-weight: 500; margin-bottom: 6px; }
+  .risk-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+  .pill { font-size: 10px; padding: 2px 8px; border-radius: 10px; }
+  .pill-med { background: #FAEEDA; color: #633806; }
+  .pill-low { background: #EAF3DE; color: #27500A; }
+  .pill-high { background: #FCEBEB; color: #501313; }
+  .pill-crit { background: #FCEBEB; color: #A32D2D; font-weight: 500; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--text2); margin-bottom: 8px; }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+  .roi-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 0.5px solid var(--border); }
+  .roi-row:last-child { border-bottom: none; }
+  .roi-icon { width: 32px; height: 32px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .roi-label { font-size: 13px; font-weight: 500; }
+  .roi-sub { font-size: 12px; color: var(--text2); }
+  .roi-val { margin-left: auto; font-size: 16px; font-weight: 500; color: var(--teal-dark); }
+</style>
+
+<div class="sim-wrap">
+
+  <div class="hero">
+    <div>
+      <h1>GCC AI Transformation Simulator</h1>
+      <p>Team VIPRAN · IIM Jammu · Nexterity 2025 — Strategy Meets Spotlight</p>
+    </div>
+    <div class="badge">Healthcare + Actuarial</div>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl-card">
+      <label>Total analysts in GCC</label>
+      <div class="ctrl-val" id="v-analysts">500</div>
+      <input type="range" min="100" max="2000" step="50" value="500" id="s-analysts" oninput="update()">
+    </div>
+    <div class="ctrl-card">
+      <label>Avg annual cost per analyst (₹ Lakhs)</label>
+      <div class="ctrl-val" id="v-cost">12</div>
+      <input type="range" min="5" max="30" step="1" value="12" id="s-cost" oninput="update()">
+    </div>
+    <div class="ctrl-card">
+      <label>Transformation phase</label>
+      <div class="ctrl-val" id="v-phase">Foundation (2025–26)</div>
+      <input type="range" min="1" max="4" step="1" value="1" id="s-phase" oninput="update()">
+    </div>
+    <div class="ctrl-card">
+      <label>LOB focus</label>
+      <div style="display:flex; gap:6px; margin-top:6px;">
+        <button class="tab-btn active" id="lob-both" onclick="setLOB('both')">Both</button>
+        <button class="tab-btn" id="lob-hc" onclick="setLOB('hc')">Healthcare</button>
+        <button class="tab-btn" id="lob-act" onclick="setLOB('act')">Actuarial</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="metrics-grid" id="kpi-cards"></div>
+
+  <div class="section">
+    <div class="section-title">Workforce allocation shift</div>
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-workload" onclick="setChart('workload')">Manual vs Strategic</button>
+      <button class="tab-btn" id="tab-tat" onclick="setChart('tat')">Turnaround Time</button>
+      <button class="tab-btn" id="tab-savings" onclick="setChart('savings')">Cost Savings</button>
+    </div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:#378ADD"></span>Before</span>
+      <span><span class="legend-dot" style="background:#1D9E75"></span>After</span>
+    </div>
+    <div class="chart-wrap" style="height:260px"><canvas id="mainChart"></canvas></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">LOB-level transformation detail</div>
+    <div class="lob-grid" id="lob-detail"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Phase roadmap & efficiency trajectory</div>
+    <div class="timeline" id="phase-timeline"></div>
+    <div class="chart-wrap" style="height:220px; margin-top:1rem"><canvas id="phaseChart"></canvas></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:1.25rem;">
+    <div class="section" style="margin-bottom:0">
+      <div class="section-title">ROI summary</div>
+      <div id="roi-rows"></div>
+    </div>
+    <div class="section" style="margin-bottom:0">
+      <div class="section-title">Risk mitigation matrix</div>
+      <div class="risk-grid" id="risk-grid"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let lob = 'both';
+let chartMode = 'workload';
+let mainChartObj, phaseChartObj;
+
+const phases = [
+  { year:'2025–26', name:'Foundation', manual:50, strategic:50, tat_hc:48, tat_act:8, saving:10 },
+  { year:'2027–28', name:'Scale', manual:35, strategic:65, tat_hc:30, tat_act:7, saving:22 },
+  { year:'2029', name:'Integrate', manual:30, strategic:70, tat_hc:24, tat_act:6, saving:28 },
+  { year:'2030', name:'Optimize', manual:20, strategic:80, tat_hc:18, tat_act:5, saving:35 },
+];
+const phaseNames = ['Foundation\n2025–26','Scale\n2027–28','Integrate\n2029','Optimize\n2030'];
+
+const lobData = {
+  hc:  { before_manual:70, after_manual:30, before_tat:72, after_tat:24, before_strat:30, after_strat:70, waste:'Searching, waiting, rework', pain:'500+ unstructured PDFs per query' },
+  act: { before_manual:65, after_manual:25, before_tat:336, after_tat:120, before_strat:35, after_strat:75, waste:'Data cleaning, duplication, overprocessing', pain:'Manual mortality table updates & reconciliation' },
+};
+
+function getPhaseIdx() { return parseInt(document.getElementById('s-phase').value) - 1; }
+function getAnalysts() { return parseInt(document.getElementById('s-analysts').value); }
+function getCost() { return parseInt(document.getElementById('s-cost').value); }
+
+function getActive() {
+  if (lob === 'hc') return [lobData.hc];
+  if (lob === 'act') return [lobData.act];
+  return [lobData.hc, lobData.act];
+}
+
+function avgStat(key) {
+  const arr = getActive();
+  return Math.round(arr.reduce((s,d)=>s+d[key],0)/arr.length);
+}
+
+function setLOB(v) {
+  lob = v;
+  ['lob-both','lob-hc','lob-act'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById('lob-'+v).classList.add('active');
+  update();
+}
+
+function setChart(v) {
+  chartMode = v;
+  ['tab-workload','tab-tat','tab-savings'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById('tab-'+v).classList.add('active');
+  buildMainChart();
+}
+
+function update() {
+  const pi = getPhaseIdx();
+  const ph = phases[pi];
+  const analysts = getAnalysts();
+  const cost = getCost();
+  document.getElementById('v-analysts').textContent = analysts;
+  document.getElementById('v-cost').textContent = cost;
+  document.getElementById('v-phase').textContent = ph.name + ' (' + ph.year + ')';
+
+  const bm = avgStat('before_manual');
+  const am = avgStat('after_manual') * (ph.manual/50);
+  const btat_hc = lobData.hc.before_tat, atat_hc = lobData.hc.after_tat * (ph.tat_hc/48);
+  const btat_act = lobData.act.before_tat, atat_act = lobData.act.after_tat * (ph.tat_act/8);
+  const manualReduction = Math.round((bm - am)/bm*100);
+  const stratGain = avgStat('after_strat') - avgStat('before_strat');
+  const totalCost = analysts * cost;
+  const savedFTE = Math.round(analysts * (bm - am)/100);
+  const moneySaved = Math.round(savedFTE * cost * ph.saving/35);
+  const prodGain = Math.round(stratGain * 1.23);
+
+  const cards = [
+    { label:'Manual work reduction', val: manualReduction + '%', sub:'vs baseline', cls:'teal', delta:'+'+manualReduction+'% efficiency', pos:true },
+    { label:'Strategic output gain', val: prodGain + '%', sub:'combined impact', cls:'blue', delta:'Mandate exceeded', pos:true },
+    { label:'FTEs redeployed', val: savedFTE.toLocaleString(), sub:'to strategic roles', cls:'amber', delta: Math.round(savedFTE/analysts*100)+'% of workforce', pos:true },
+    { label:'Annual cost savings', val: '₹'+moneySaved+'Cr', sub:'estimated', cls:'green', delta:'Payback: 18–24 months', pos:true },
+    { label:'HC TAT (hours)', val: Math.round(atat_hc)+'h', sub:'was '+btat_hc+'h', cls:'teal', delta:'-'+Math.round((btat_hc-atat_hc)/btat_hc*100)+'%', pos:true },
+    { label:'Act TAT (days)', val: Math.round(atat_act/24)+'d', sub:'was 14d', cls:'blue', delta:'-'+Math.round((btat_act-atat_act)/btat_act*100)+'%', pos:true },
+    { label:'Knowledge reuse', val: '60%+', sub:'cross-LOB shared', cls:'amber', delta:'Was 0%', pos:true },
+    { label:'Total GCC cost pool', val:'₹'+Math.round(totalCost/100)+'Cr', sub: analysts+' analysts', cls:'green', delta:'Savings target: '+ph.saving+'%', pos:true },
+  ];
+
+  document.getElementById('kpi-cards').innerHTML = cards.map(c=>`
+    <div class="metric ${c.cls}">
+      <div class="m-label">${c.label}</div>
+      <div class="m-val">${c.val}</div>
+      <div class="m-sub">${c.sub}</div>
+      <div class="m-delta ${c.pos?'delta-pos':'delta-neg'}">${c.delta}</div>
+    </div>
+  `).join('');
+
+  buildLOBDetail(pi);
+  buildTimeline(pi);
+  buildMainChart();
+  buildPhaseChart(pi);
+  buildROI(moneySaved, savedFTE, analysts, cost);
+}
+
+function buildMainChart() {
+  const pi = getPhaseIdx();
+  const ph = phases[pi];
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  if (mainChartObj) mainChartObj.destroy();
+  let labels, before, after, label1, label2, unit;
+
+  if (chartMode === 'workload') {
+    labels = ['Healthcare manual%','Healthcare strategic%','Actuarial manual%','Actuarial strategic%'];
+    before = [70,30,65,35];
+    after = [
+      Math.round(30*(ph.manual/50)), Math.round(70*(ph.strategic/50)),
+      Math.round(25*(ph.manual/50)), Math.round(75*(ph.strategic/50))
+    ];
+    unit='%';
+  } else if (chartMode === 'tat') {
+    labels = ['HC TAT (hrs)','Actuarial TAT (hrs)'];
+    before = [72,336];
+    after = [Math.round(24*(ph.tat_hc/48)), Math.round(120*(ph.tat_act/8))];
+    unit='h';
+  } else {
+    labels = ['Phase 1','Phase 2','Phase 3','Phase 4'];
+    before = [0,0,0,0];
+    after = [10,22,28,35];
+    unit='%';
+  }
+
+  mainChartObj = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Before', data: before, backgroundColor:'#378ADD', borderRadius:4 },
+        { label:'After', data: after, backgroundColor:'#1D9E75', borderRadius:4 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c=>c.dataset.label+': '+c.raw+unit } } },
+      scales:{
+        x:{ grid:{color:'rgba(128,128,128,0.1)'}, ticks:{color:'#888', font:{size:11}} },
+        y:{ grid:{color:'rgba(128,128,128,0.1)'}, ticks:{color:'#888', font:{size:11}, callback:v=>v+unit} }
+      }
+    }
+  });
+}
+
+function buildLOBDetail(pi) {
+  const ph = phases[pi];
+  const items = [
+    { name:'Healthcare', key:'hc', color:'#378ADD' },
+    { name:'Actuarial', key:'act', color:'#1D9E75' },
+  ];
+  document.getElementById('lob-detail').innerHTML = items.map(it=>{
+    const d = lobData[it.key];
+    const am = Math.round(d.after_manual*(ph.manual/50));
+    const as_ = 100-am;
+    return `
+    <div class="lob-card">
+      <div class="lob-title" style="color:${it.color}">${it.name} LOB</div>
+      <div class="bar-row"><span class="bar-label">Manual</span>
+        <div class="bar-track"><div class="bar-fill before" style="width:${d.before_manual}%"></div></div>
+        <span class="bar-pct" style="color:#378ADD">${d.before_manual}%</span>
+      </div>
+      <div class="bar-row"><span class="bar-label">→ After</span>
+        <div class="bar-track"><div class="bar-fill after" style="width:${am}%"></div></div>
+        <span class="bar-pct" style="color:#1D9E75">${am}%</span>
+      </div>
+      <div class="bar-row"><span class="bar-label">Strategic</span>
+        <div class="bar-track"><div class="bar-fill before" style="width:${d.before_strat}%"></div></div>
+        <span class="bar-pct" style="color:#378ADD">${d.before_strat}%</span>
+      </div>
+      <div class="bar-row"><span class="bar-label">→ After</span>
+        <div class="bar-track"><div class="bar-fill after" style="width:${as_}%"></div></div>
+        <span class="bar-pct" style="color:#1D9E75">${as_}%</span>
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--color-text-secondary)">Pain: ${d.pain}</div>
+    </div>`;
+  }).join('');
+}
+
+function buildTimeline(pi) {
+  document.getElementById('phase-timeline').innerHTML = phases.map((ph,i)=>`
+    <div class="phase" style="opacity:${i===pi?1:0.55}; border-left: 2px solid ${i===pi?'#1D9E75':'#9FE1CB'}">
+      ${i>0?'<div class="phase-dot"></div>':''}
+      <div class="phase-year" style="color:${i===pi?'#0F6E56':'#1D9E75'}">${ph.year}</div>
+      <div class="phase-name" style="font-weight:${i===pi?'500':'400'}">${ph.name}</div>
+      <div class="phase-stat">Manual: ${ph.manual}% → ${100-ph.manual}% strategic</div>
+      <div class="phase-stat">Savings: ~${ph.saving}%</div>
+    </div>
+  `).join('');
+}
+
+function buildPhaseChart(pi) {
+  const ctx2 = document.getElementById('phaseChart').getContext('2d');
+  if (phaseChartObj) phaseChartObj.destroy();
+  phaseChartObj = new Chart(ctx2, {
+    type:'line',
+    data:{
+      labels:['Baseline','Foundation\n25-26','Scale\n27-28','Integrate\n29','Optimize\n2030'],
+      datasets:[
+        { label:'Manual work %', data:[67,50,35,30,20], borderColor:'#378ADD', backgroundColor:'rgba(55,138,221,0.1)', tension:0.4, fill:true, pointBackgroundColor:'#378ADD', pointRadius:5 },
+        { label:'Strategic work %', data:[33,50,65,70,80], borderColor:'#1D9E75', backgroundColor:'rgba(29,158,117,0.1)', tension:0.4, fill:true, pointBackgroundColor:phases.map((_,i)=>i===pi?'#0F6E56':'#1D9E75'), pointRadius:phases.map((_,i)=>i===pi?8:5) },
+        { label:'Cost savings %', data:[0,10,22,28,35], borderColor:'#EF9F27', backgroundColor:'rgba(239,159,39,0.05)', tension:0.4, borderDash:[5,4], pointBackgroundColor:'#EF9F27', pointRadius:5 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+c.raw+'%' } } },
+      scales:{
+        x:{ grid:{color:'rgba(128,128,128,0.1)'}, ticks:{color:'#888',font:{size:11}} },
+        y:{ min:0, max:100, grid:{color:'rgba(128,128,128,0.1)'}, ticks:{color:'#888',font:{size:11},callback:v=>v+'%'} }
+      }
+    }
+  });
+}
+
+function buildROI(saved, fte, analysts, cost) {
+  const rows = [
+    { icon:'📈', label:'Mandate achievement', sub:'25% target → 30–35% delivered', val:'+8 pts', bg:'#E1F5EE' },
+    { icon:'⏱', label:'Payback period', sub:'Phase 1 investment', val:'18–24 mo', bg:'#E6F1FB' },
+    { icon:'💰', label:'Estimated annual saving', sub:'Cross-LOB duplication eliminated', val:'₹'+saved+'Cr', bg:'#EAF3DE' },
+    { icon:'👥', label:'FTEs redeployed', sub:'Data processor → insight strategist', val:fte.toLocaleString(), bg:'#FAEEDA' },
+    { icon:'🔗', label:'Cross-LOB knowledge reuse', sub:'Was 0% — now 60%+', val:'60%+', bg:'#E1F5EE' },
+  ];
+  document.getElementById('roi-rows').innerHTML = rows.map(r=>`
+    <div class="roi-row">
+      <div class="roi-icon" style="background:${r.bg}">${r.icon}</div>
+      <div><div class="roi-label">${r.label}</div><div class="roi-sub">${r.sub}</div></div>
+      <div class="roi-val">${r.val}</div>
+    </div>
+  `).join('');
+}
+
+function buildRiskGrid() {
+  const risks = [
+    { name:'AI hallucination', prob:'Medium', impact:'High', mit:'Layer-2 validation + human approval' },
+    { name:'Data privacy breach', prob:'Low', impact:'Critical', mit:'End-to-end encryption, GDPR/DDP' },
+    { name:'Employee resistance', prob:'High', impact:'Medium', mit:'ADKAR model, phased rollout' },
+    { name:'Regulatory non-compliance', prob:'Medium', impact:'Critical', mit:'Automated compliance dashboard' },
+    { name:'Technology downtime', prob:'Low', impact:'High', mit:'Redundant infra + 99.9% SLA' },
+  ];
+  const pClass = p => p==='High'?'pill-high':p==='Medium'?'pill-med':'pill-low';
+  const iClass = i => i==='Critical'?'pill-crit':i==='High'?'pill-high':'pill-med';
+  document.getElementById('risk-grid').innerHTML = risks.map(r=>`
+    <div class="risk-item">
+      <div class="risk-name">${r.name}</div>
+      <div class="risk-pills">
+        <span class="pill ${pClass(r.prob)}">${r.prob}</span>
+        <span class="pill ${iClass(r.impact)}">${r.impact}</span>
+      </div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-top:5px">${r.mit}</div>
+    </div>
+  `).join('');
+}
+
+buildRiskGrid();
+update();
+</script>
